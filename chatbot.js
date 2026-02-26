@@ -1,8 +1,6 @@
 // ── OxyTrace AI Chatbot (Gemini) ──────────────────────────────────────────────
-// IMPORTANT: Set your Gemini API key below, or set window.GEMINI_API_KEY
-// before this script loads. Get a free key at: https://aistudio.google.com/app/apikey
 (function () {
-  const GEMINI_API_KEY = window.GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY';
+  const GEMINI_API_KEY = window.GEMINI_API_KEY || '3c6018c1a469453181efdaa8bae424b0.dfiQs62RCvC5ZeFM';
   const MODEL = 'gemini-2.0-flash';
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -16,6 +14,8 @@ You help users with:
 Always be concise, friendly, and focused on air quality and health topics.
 If asked something unrelated, gently redirect to OxyTrace topics.`;
 
+  // System prompt is injected as the opening exchange in history
+  // (more compatible than top-level system_instruction across all API key tiers)
   let history = [
     { role: 'user',  parts: [{ text: SYSTEM_PROMPT }] },
     { role: 'model', parts: [{ text: "Understood! I'm OxyBot, your OxyTrace air quality assistant. I'm ready to help with AQI info, health tips, safe navigation, and pollution alerts." }] }
@@ -30,23 +30,17 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
       width: 52px; height: 52px; border-radius: 50%;
       background: linear-gradient(135deg, #00d4ff, #00ff88);
       box-shadow: 0 0 20px rgba(0,212,255,0.6), 0 0 40px rgba(0,255,136,0.2);
-      cursor: grab; display: flex; align-items: center; justify-content: center;
-      font-size: 22px; transition: box-shadow 0.2s;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 22px; transition: transform 0.2s, box-shadow 0.2s;
       animation: pulse-bubble 3s ease-in-out infinite;
-      touch-action: none; -webkit-user-select: none; user-select: none;
     }
-    #oxy-bubble.dragging {
-      cursor: grabbing; animation: none; transform: scale(1.12);
-      box-shadow: 0 0 40px rgba(0,212,255,1), 0 4px 20px rgba(0,0,0,0.5);
-      transition: none;
-    }
-    #oxy-bubble:not(.dragging):hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(0,212,255,0.9); }
+    #oxy-bubble:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(0,212,255,0.9); }
     @keyframes pulse-bubble {
       0%,100% { box-shadow: 0 0 20px rgba(0,212,255,0.6); }
       50% { box-shadow: 0 0 35px rgba(0,212,255,0.9), 0 0 60px rgba(0,255,136,0.3); }
     }
     #oxy-window {
-      position: fixed; z-index: 10000;
+      position: fixed; bottom: 155px; right: 20px; z-index: 10000;
       width: 340px; max-height: 520px;
       background: #070b0f; border: 1px solid rgba(0,212,255,0.3);
       border-radius: 16px; display: flex; flex-direction: column;
@@ -72,7 +66,7 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
     #oxy-close:hover { color: #00d4ff; }
     #oxy-messages {
       flex: 1; overflow-y: auto; padding: 14px; display: flex;
-      flex-direction: column; gap: 10px; min-height: 0; max-height: 340px;
+      flex-direction: column; gap: 10px; min-height: 0; max-height: 360px;
     }
     #oxy-messages::-webkit-scrollbar { width: 4px; }
     #oxy-messages::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius:4px; }
@@ -100,12 +94,6 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
     .oxy-typing span:nth-child(2){animation-delay:.2s;}
     .oxy-typing span:nth-child(3){animation-delay:.4s;}
     @keyframes typingDot { 0%,80%,100%{opacity:0.2;transform:scale(1);} 40%{opacity:1;transform:scale(1.2);} }
-    #oxy-api-notice {
-      margin: 0 14px 8px; padding: 8px 12px;
-      background: rgba(255,180,0,0.07); border: 1px solid rgba(255,180,0,0.2);
-      border-radius: 8px; font-size: 10px; color: rgba(255,200,80,0.85); line-height: 1.5;
-    }
-    #oxy-api-notice a { color: #00d4ff; }
     #oxy-input-area {
       padding: 12px; border-top: 1px solid rgba(0,212,255,0.12);
       display: flex; gap: 8px; align-items: flex-end;
@@ -140,12 +128,8 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
   styleEl.textContent = styles;
   document.head.appendChild(styleEl);
 
-  const apiNoticeHTML = GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY'
-    ? `<div id="oxy-api-notice">⚠️ No API key. Get one free at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a>, then set <code>window.GEMINI_API_KEY</code> in index.html.</div>`
-    : '';
-
   document.body.insertAdjacentHTML('beforeend', `
-    <div id="oxy-bubble" title="OxyBot — hold &amp; drag to move">🤖</div>
+    <div id="oxy-bubble" title="OxyBot — AI Assistant">🤖</div>
     <div id="oxy-window" class="hidden">
       <div id="oxy-header">
         <div id="oxy-header-left">
@@ -158,7 +142,6 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
         <span id="oxy-close">✕</span>
       </div>
       <div id="oxy-messages"></div>
-      ${apiNoticeHTML}
       <div class="oxy-quick-btns">
         <button class="oxy-quick" data-q="What does AQI mean?">What is AQI?</button>
         <button class="oxy-quick" data-q="Is it safe to go outside today?">Safe outside?</button>
@@ -179,108 +162,17 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
   const input  = document.getElementById('oxy-input');
   const send   = document.getElementById('oxy-send');
 
-  // Initialize window position (bottom-right default)
-  win.style.bottom = '155px';
-  win.style.right  = '20px';
-
-  // ── DRAGGABLE LOGIC ──────────────────────────────────────────────────────────
-  let isDragging = false;
-  let hasMoved   = false;
-  let startPX = 0, startPY = 0;  // pointer start
-  let startBX = 0, startBY = 0;  // bubble start (from left/top)
-
-  function getClientXY(e) {
-    if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    return { x: e.clientX, y: e.clientY };
-  }
-
-  function getBubbleRect() {
-    return bubble.getBoundingClientRect();
-  }
-
-  function setBubblePosition(x, y) {
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const bw = bubble.offsetWidth, bh = bubble.offsetHeight;
-    x = Math.max(8, Math.min(vw - bw - 8, x));
-    y = Math.max(8, Math.min(vh - bh - 8, y));
-    bubble.style.left   = x + 'px';
-    bubble.style.top    = y + 'px';
-    bubble.style.right  = 'auto';
-    bubble.style.bottom = 'auto';
-  }
-
-  function positionWindowNearBubble() {
-    const br = getBubbleRect();
-    const ww = 340, wh = 520;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    let wx = br.left + br.width / 2 - ww / 2;
-    let wy = br.top - wh - 12;
-    if (wy < 8) wy = br.bottom + 12;
-    wx = Math.max(8, Math.min(vw - ww - 8, wx));
-    win.style.left   = wx + 'px';
-    win.style.top    = wy + 'px';
-    win.style.right  = 'auto';
-    win.style.bottom = 'auto';
-  }
-
-  bubble.addEventListener('mousedown', startDrag);
-  bubble.addEventListener('touchstart', startDrag, { passive: false });
-
-  function startDrag(e) {
-    const { x, y } = getClientXY(e);
-    isDragging = true;
-    hasMoved   = false;
-    startPX = x; startPY = y;
-    const br = getBubbleRect();
-    startBX = br.left; startBY = br.top;
-    bubble.classList.add('dragging');
-    e.preventDefault();
-  }
-
-  document.addEventListener('mousemove', onDragMove);
-  document.addEventListener('touchmove', onDragMove, { passive: false });
-
-  function onDragMove(e) {
-    if (!isDragging) return;
-    const { x, y } = getClientXY(e);
-    const dx = x - startPX, dy = y - startPY;
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true;
-    if (hasMoved) {
-      setBubblePosition(startBX + dx, startBY + dy);
-      if (isOpen) positionWindowNearBubble();
-    }
-    e.preventDefault();
-  }
-
-  document.addEventListener('mouseup', endDrag);
-  document.addEventListener('touchend', endDrag);
-
-  function endDrag() {
-    if (!isDragging) return;
-    isDragging = false;
-    bubble.classList.remove('dragging');
-    if (!hasMoved) {
-      toggleChat();
-    }
-  }
-
   // ── Toggle ────────────────────────────────────────────────────────────────────
   function toggleChat() {
     isOpen = !isOpen;
     win.classList.toggle('hidden', !isOpen);
-    if (isOpen) {
-      positionWindowNearBubble();
-      if (msgs.children.length === 0) {
-        addMsg('bot', "👋 Hey! I'm OxyBot, your OxyTrace AI assistant.\n\nAsk me about AQI levels, health tips, safe parks, or pollution alerts!");
-      }
+    if (isOpen && msgs.children.length === 0) {
+      addMsg("bot", "👋 Hey! I'm OxyBot, your OxyTrace AI assistant.\n\nAsk me about AQI levels, health tips, safe parks, or pollution alerts!");
     }
   }
 
-  document.getElementById('oxy-close').addEventListener('click', (e) => {
-    e.stopPropagation();
-    isOpen = false;
-    win.classList.add('hidden');
-  });
+  bubble.addEventListener('click', toggleChat);
+  document.getElementById('oxy-close').addEventListener('click', toggleChat);
 
   document.querySelectorAll('.oxy-quick').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -293,6 +185,7 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
   function addMsg(type, text) {
     const div = document.createElement('div');
     div.className = `oxy-msg ${type}`;
+    // Strip markdown bold/italic for cleaner display
     div.textContent = text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
     msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
@@ -317,18 +210,13 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
   async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
-
-    if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY') {
-      addMsg('error', '⚠️ API key not set. Please configure your Gemini API key. See the notice above.');
-      return;
-    }
-
     input.value = '';
     input.style.height = 'auto';
     send.disabled = true;
 
     addMsg('user', text);
     showTyping();
+
     history.push({ role: 'user', parts: [{ text }] });
 
     try {
@@ -341,22 +229,29 @@ If asked something unrelated, gently redirect to OxyTrace topics.`;
       const data = await res.json();
       removeTyping();
 
+      // Log full response to console for debugging
+      console.log('[OxyBot] API response:', data);
+
       if (!res.ok) {
+        // Show the actual API error message
         const errMsg = data?.error?.message || `API error ${res.status}`;
-        addMsg('error', `⚠️ ${errMsg}`);
-        history.pop();
+        console.error('[OxyBot] API error:', errMsg);
+        addMsg('error', `⚠️ API Error: ${errMsg}`);
+        history.pop(); // Remove the failed message from history
       } else {
         const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (reply) {
           history.push({ role: 'model', parts: [{ text: reply }] });
           addMsg('bot', reply);
         } else {
-          addMsg('error', '⚠️ Empty response. Please try again.');
+          console.warn('[OxyBot] Unexpected response shape:', data);
+          addMsg('error', '⚠️ Got an empty response. Please try again.');
           history.pop();
         }
       }
     } catch (err) {
       removeTyping();
+      console.error('[OxyBot] Network/fetch error:', err);
       addMsg('error', `⚠️ Network error: ${err.message}`);
       history.pop();
     }
