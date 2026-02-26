@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OxyTrace · Medical Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      background-color: #070b0f; 
+      color: #e0f4ff; 
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh;
+    }
+
+    .progress-step { 
+      height: 3px; 
+      border-radius: 99px; 
+      transition: all 0.4s ease;
+    }
+
+    .condition-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(255, 255, 255, 0.02);
+      user-select: none;
+    }
+    .condition-row:hover {
+      background: rgba(0, 212, 255, 0.04);
+      border-color: rgba(0, 212, 255, 0.2);
+    }
+    .condition-row.selected {
+      background: rgba(0, 212, 255, 0.08);
+      border-color: rgba(0, 212, 255, 0.35);
+    }
+    .condition-row.selected .check-box {
+      background: #00d4ff;
+      border-color: #00d4ff;
+    }
+    .condition-row.selected .check-box::after {
+      opacity: 1;
+    }
+
+    .check-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      flex-shrink: 0;
+      margin-top: 1px;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .check-box::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 5px;
+      width: 5px; height: 9px;
+      border: 2px solid #070b0f;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .cond-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.04);
+      transition: background 0.18s;
+    }
+    .condition-row.selected .cond-icon {
+      background: rgba(0, 212, 255, 0.12);
+    }
+
+    .other-input {
+      background: rgba(13, 21, 32, 0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: #e0f4ff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .other-input:focus {
+      border-color: rgba(0, 212, 255, 0.4);
+    }
+    .other-input::placeholder {
+      color: rgba(255,255,255,0.2);
+    }
+
+    .btn-complete {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      color: #070b0f;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-complete:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-complete:active { transform: translateY(0); }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div style="max-width: 420px; margin: 0 auto; padding: 32px 20px 40px;">
+    
+    <!-- Progress -->
+    <div style="display: flex; gap: 6px; margin-bottom: 32px;">
+      <div class="progress-step" style="flex:1; background: rgba(0,212,255,0.3);"></div>
+      <div class="progress-step" style="flex:1; background: #00d4ff; box-shadow: 0 0 8px rgba(0,212,255,0.4);"></div>
+    </div>
+
+    <!-- Header -->
+    <div style="margin-bottom: 28px;">
+      <p style="font-size: 11px; color: rgba(0,212,255,0.5); letter-spacing: 0.15em; margin-bottom: 8px; font-family: 'Orbitron', sans-serif;">STEP 2 OF 2</p>
+      <h1 style="font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; color: white; margin-bottom: 10px;">Medical Profile</h1>
+      <p style="font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.65;">
+        Select any conditions that apply. This helps us give you personalised air quality advice and risk alerts.
+      </p>
+    </div>
+
+    <!-- Conditions list -->
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+
+      <div class="condition-row" onclick="toggleCondition(this, 'Asthma')">
+        <div class="check-box"></div>
+        <div class="cond-icon">🌬️</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 3px;">Asthma</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.35);">Bronchial sensitivity & airway inflammation</div>
+        </div>
+      </div>
+
+      <div class="condition-row" onclick="toggleCondition(this, 'COPD')">
+        <div class="check-box"></div>
+        <div class="cond-icon">🫁</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 3px;">COPD</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.35);">Chronic Obstructive Pulmonary Disease</div>
+        </div>
+      </div>
+
+      <div class="condition-row" onclick="toggleCondition(this, 'Tuberculosis')">
+        <div class="check-box"></div>
+        <div class="cond-icon">🦠</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 3px;">Tuberculosis</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.35);">Active or history of TB infection</div>
+        </div>
+      </div>
+
+      <div class="condition-row" onclick="toggleCondition(this, 'Bronchitis')">
+        <div class="check-box"></div>
+        <div class="cond-icon">😮‍💨</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 3px;">Chronic Bronchitis</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.35);">Recurring airway inflammation</div>
+        </div>
+      </div>
+
+      <div class="condition-row" onclick="toggleCondition(this, 'Lung Cancer')">
+        <div class="check-box"></div>
+        <div class="cond-icon">🔬</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 3px;">Lung Cancer</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.35);">Active treatment or history of lung cancer</div>
+        </div>
+      </div>
+
+      <div class="condition-row" onclick="toggleCondition(this, 'Pneumonia')">
+        <div class="check-box"></div>
+        <div class="cond-icon">🫀</div>
+        <div style="flex:1;">
+          <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 3px;">Pneumonia</div>
+          <div style="font-size: 11px; color: rgba(255,255,255,0.35);">History of pneumonia or recurring lung infections</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Other condition -->
+    <div style="margin-bottom: 28px;">
+      <p style="font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 8px; letter-spacing: 0.04em;">If others, please specify</p>
+      <input 
+        type="text" 
+        id="other-condition" 
+        class="other-input"
+        placeholder="e.g. Cystic Fibrosis, Emphysema, Pulmonary Fibrosis..."
+      >
+    </div>
+
+    <!-- Note -->
+    <p style="font-size: 11px; color: rgba(255,255,255,0.18); margin-bottom: 22px; text-align: center; line-height: 1.6;">
+      Leave all unchecked if you have no respiratory conditions
+    </p>
+
+    <!-- Submit -->
+    <button class="btn-complete" onclick="finishSetup()">
+      COMPLETE SETUP →
+    </button>
+
+  </div>
+
+  <script>
+    const selected = new Set();
+
+    function toggleCondition(el, value) {
+      if (selected.has(value)) {
+        selected.delete(value);
+        el.classList.remove('selected');
+      } else {
+        selected.add(value);
+        el.classList.add('selected');
+      }
+    }
+
+    async function finishSetup() {
+      const conditions = Array.from(selected);
+      const other = document.getElementById('other-condition').value.trim();
+      if (other) conditions.push(other);
+      if (conditions.length === 0) conditions.push('Healthy');
+
+      const profile = {
+        name: localStorage.getItem('oxy_username') || 'User',
+        age: parseInt(localStorage.getItem('oxy_age')) || 0,
+        conditions
+      };
+
+      localStorage.setItem('oxtrace_health_profile', JSON.stringify(profile));
+      localStorage.setItem('oxy_onboarded', 'true');
+
+      try {
+        const { saveHealthProfile } = await import('./firebase.js');
+        await saveHealthProfile(profile);
+        console.log('Health profile saved to Firebase');
+      } catch(e) {
+        console.warn('Firebase save failed (continuing):', e.message);
+      }
+
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
